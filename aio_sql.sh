@@ -46,32 +46,13 @@ phpenmod sqlsrv pdo_sqlsrv
 
 echo "8. Riavvio PHP-FPM e reload Nginx"
 systemctl restart php8.4-fpm
-if systemctl list-units --type=service --all | grep -q '^nginx.service'; then
+if systemctl list-unit-files --type=service | grep -q '^nginx\.service'; then
   systemctl reload nginx
 else
   echo "Avviso: nginx.service non presente, skip reload"
 fi
 
-echo "9. Verifica caricamento estensioni"
-if php -m | grep -q sqlsrv; then
-  echo "  sqlsrv: CARICATO"
-else
-  echo "  sqlsrv: ERRORE – non caricato"
-  exit 1
-fi
-if php -m | grep -q pdo_sqlsrv; then
-  echo "  pdo_sqlsrv: CARICATO"
-else
-  echo "  pdo_sqlsrv: ERRORE – non caricato"
-  exit 1
-fi
-
-echo "Informazioni su sqlsrv:"
-php --ri sqlsrv
-echo "Informazioni su pdo_sqlsrv:"
-php --ri pdo_sqlsrv
-
-echo "10. Rimozione PHP 8.3 (se presente)"
+echo "9. Rimozione PHP 8.3 (se presente)"
 if dpkg -l | grep -q '^ii\s*php8.3'; then
   apt purge -y php8.3*
   apt autoremove -y

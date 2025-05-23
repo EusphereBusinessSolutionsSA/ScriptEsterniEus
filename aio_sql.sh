@@ -29,7 +29,7 @@ pecl install -f sqlsrv
 pecl install -f pdo_sqlsrv
 
 echo "6. Verifica presenza dei file .so"
-EXT_DIR=$(php -i | grep '^extension_dir' | awk '{print $3}')
+EXT_DIR=$(php -i | awk '/extension_dir/ {print $3; exit}')
 if [[ ! -f "$EXT_DIR/sqlsrv.so" ]]; then
   echo "Errore: sqlsrv.so non trovato in $EXT_DIR"
   exit 1
@@ -40,24 +40,25 @@ if [[ ! -f "$EXT_DIR/pdo_sqlsrv.so" ]]; then
 fi
 
 echo "7. Abilitazione delle estensioni PHP"
-echo extension=sqlsrv.so > /etc/php/8.4/mods-available/sqlsrv.ini
+echo extension=sqlsrv.so   > /etc/php/8.4/mods-available/sqlsrv.ini
 echo extension=pdo_sqlsrv.so > /etc/php/8.4/mods-available/pdo_sqlsrv.ini
 phpenmod sqlsrv pdo_sqlsrv
 
 echo "8. Riavvio PHP-FPM e reload Nginx"
 systemctl restart php8.4-fpm
-systemctl reload nginx
+if systemctl list-units --type=service --all | grep -q '^nginx.service'; then
+  systemctl reload nginx
+else
+  echo "Avviso: nginx.service non presente, skip reload"
+fi
 
 echo "9. Verifica caricamento estensioni"
-# Controllo sqlsrv
 if php -m | grep -q sqlsrv; then
   echo "  sqlsrv: CARICATO"
 else
   echo "  sqlsrv: ERRORE – non caricato"
   exit 1
 fi
-
-# Controllo pdo_sqlsrv
 if php -m | grep -q pdo_sqlsrv; then
   echo "  pdo_sqlsrv: CARICATO"
 else
@@ -65,11 +66,17 @@ else
   exit 1
 fi
 
-# Mostra informazioni dettagliate sui driver
 echo "Informazioni su sqlsrv:"
 php --ri sqlsrv
-
 echo "Informazioni su pdo_sqlsrv:"
 php --ri pdo_sqlsrv
+
+echo "10. Rimozione PHP 8.3 (se presente)"
+if dpkg -l | grep -q '^ii\s*php8.3'; then
+  apt purge -y php8.3*
+  apt autoremove -y
+else
+  echo "  nessun pacchetto php8.3 installato"
+fi
 
 echo "Installazione completata con successo"

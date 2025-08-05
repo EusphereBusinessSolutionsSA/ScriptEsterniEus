@@ -111,7 +111,7 @@ wget -UseBasicParsing $url -OutFile "installer.msi"
 Write-Host "Installer scaricato."
 # Install the MSI package silently
 Write-Host "Installazione avviata."
-Start-Process -FilePath msiexec.exe -ArgumentList '/l*v','C:\package.log','/i','installer.msi','/qn','SERVER=195.65.61.109,195.65.61.168','SERVERACTIVE=195.65.61.109:10051,195.65.61.168:10051','HOSTNAMEITEM=system.hostname','LISTENPORT=0' -Wait
+Start-Process -FilePath msiexec.exe -ArgumentList '/l*v','C:\package.log','/i','installer.msi','/qn','SERVER=195.65.61.109,195.65.61.168','SERVERACTIVE=195.65.61.109:10051,195.65.61.168:10051','HOSTNAMEITEM=system.hostname' -Wait
 Write-Host "Installazione completata."
 # Go back to the previous directory
 Set-Location ..

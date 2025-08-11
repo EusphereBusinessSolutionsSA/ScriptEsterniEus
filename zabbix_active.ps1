@@ -1,3 +1,9 @@
+$service = Get-Service -Name "Zabbix Agent 2" -ErrorAction SilentlyContinue
+if($service -ne $null)
+{
+    exit
+}
+
 # Check if the script is running as Administrator
 function Test-Admin {
     $currentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
